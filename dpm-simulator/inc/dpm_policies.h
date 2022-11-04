@@ -46,6 +46,8 @@ typedef int dpm_policy_t;
 typedef struct {
     /* Day2: you can add/change stuff here */
     psm_time_t timeout;
+    psm_time_t timeout_sleep;
+
 } dpm_timeout_params;
 
 /**
@@ -111,7 +113,7 @@ dpm_work_item* dpm_init_work_queue(int *num_items, char *fwl);
  * @return 1 on success, 0 on failure
  *
  */
-int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t t_curr,
+int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
         dpm_timeout_params tparams, dpm_history_params hparams);
 

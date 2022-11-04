@@ -16,10 +16,12 @@ int main(int argc, char *argv[]) {
     dpm_history_params hparams;
     dpm_policy_t sel_policy;
 
+    tparams.timeout_sleep = 1000000;
     if(!parse_args(argc, argv, fwl, &psm, &sel_policy, &tparams, &hparams)) {
         printf("[error] reading command line arguments\n");
         return -1;
     }
+    //printf("%f - %f\n", (float)tparams.timeout, (float)(tparams.timeout_sleep));
     psm_print(psm);
 	dpm_simulate(psm, sel_policy, tparams, hparams, fwl);
 }

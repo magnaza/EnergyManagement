@@ -21,6 +21,16 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
             else return	0;
         }
 
+        // consider multimple timeout for implementing both idle and sleep states
+        if(strcmp(argv[cur], "-ts") == 0) {
+            //*selected_policy = DPM_TIMEOUT;
+            if(argc > cur + 1) {
+                tparams->timeout_sleep = atof(argv[++cur]);
+            }
+            else return	0;
+            //printf("fin qui tutto bene?");
+        }
+
         // set policy to history based and get parameters and thresholds
         if(strcmp(argv[cur], "-h") == 0) {
             *selected_policy = DPM_HISTORY;

@@ -57,7 +57,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         // 1. Inactive phase
         t_inactive_start = t_curr;
         while(t_curr < work_queue[next_work_item].arrival) {
-            if (!dpm_decide_state(&curr_state, prev_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams)) {
+            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams)) {
                 printf("[error] cannot decide next state!\n");
                 return 0;
             }
@@ -132,7 +132,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 }
 
 /* decide next power state */
-int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t t_curr,
+int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
         dpm_timeout_params tparams, dpm_history_params hparams)
 {
@@ -140,13 +140,25 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_time_t
 
         case DPM_TIMEOUT:
             /* Day 2: EDIT */
-            if(t_curr >= t_inactive_start + tparams.timeout) {
-                *next_state = PSM_STATE_IDLE;
+            if(t_curr >= t_inactive_start + tparams.timeout_sleep){
+                if(curr_state == PSM_STATE_RUN) {
+                    //printf("next state is sleep");
+                    *next_state = PSM_STATE_SLEEP;
+                } else if(curr_state == PSM_STATE_IDLE){
+                    //printf("next state is run(sleep)");
+                    *next_state = PSM_STATE_RUN;
+                }
+                break;
             } else {
-                *next_state = PSM_STATE_RUN;
+                if(t_curr >= t_inactive_start + tparams.timeout) {
+                    //printf("nect state is idle");
+                    *next_state = PSM_STATE_IDLE;
+                } else {
+                    //printf("next state is run");
+                    *next_state = PSM_STATE_RUN;
+                }
+                break;
             }
-            break;
-
         case DPM_HISTORY:
             /* Day 3: EDIT */
             *next_state = PSM_STATE_RUN;
