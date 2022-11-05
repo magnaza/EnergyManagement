@@ -31,10 +31,15 @@
  * @defgroup dpm_policy_ids DPM policy identifiers
  * @{
  */
+
 /** timeout-based policy */
-#define DPM_TIMEOUT 0
+#define DPM_TIMEOUT_IDLE 0
 /** history-based policy */
 #define DPM_HISTORY 1
+/** timeout-based policy sleep */
+#define DPM_TIMEOUT_SLEEP 2
+/** timeout-based policy sleep */
+#define DPM_TIMEOUT_SLEEP_IDLE 3
 /** @} */
 
 /** Type alias for DPM policy IDs */

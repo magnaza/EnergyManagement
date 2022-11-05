@@ -137,8 +137,28 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
         dpm_timeout_params tparams, dpm_history_params hparams)
 {
     switch (policy) {
-
-        case DPM_TIMEOUT:
+        case DPM_TIMEOUT_IDLE:
+                    
+                if(t_curr >= t_inactive_start + tparams.timeout) {
+                    //printf("nect state is idle");
+                    *next_state = PSM_STATE_IDLE;
+                } else {
+                    //printf("next state is run");
+                    *next_state = PSM_STATE_RUN;
+                }
+                break;
+                    
+        case DPM_TIMEOUT_SLEEP:
+                if(t_curr >= t_inactive_start + tparams.timeout_sleep) {
+                        //printf("nect state is idle");
+                        *next_state = PSM_STATE_SLEEP;
+                    } else {
+                        //printf("next state is run");
+                        *next_state = PSM_STATE_RUN;
+                    }
+                    break;
+                
+        case DPM_TIMEOUT_SLEEP_IDLE:
             /* Day 2: EDIT */
             if(t_curr >= t_inactive_start + tparams.timeout_sleep){
                 if(curr_state == PSM_STATE_RUN) {
