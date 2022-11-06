@@ -13,3 +13,4 @@ load reports\output1_sleep.txt
 t = 1:n
 table2=array2table(output1_sleep)
 plot(t, table2.output1_sleep2)
+legend('idle', 'sleep')
