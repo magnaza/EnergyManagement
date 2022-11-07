@@ -65,7 +65,6 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
     }
     if(si == 2){
         *selected_policy = DPM_TIMEOUT_SLEEP_IDLE;
-        printf("hello baby \n \n \n");
     }
     return 1;
 }
