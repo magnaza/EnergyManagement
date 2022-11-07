@@ -136,6 +136,7 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
         dpm_timeout_params tparams, dpm_history_params hparams)
 {
+    int t_pred;
     switch (policy) {
         case DPM_TIMEOUT_IDLE:
                     
@@ -181,7 +182,14 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             }
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            *next_state = PSM_STATE_RUN;
+            t_pred = hparams.alpha[0];
+            for(int i = 1; i < 5; i++){
+                t_pred += history[i-1] * hparams.alpha[i];
+            }
+            if(t_pred >= hparams.threshold[1]) 
+                *next_state = PSM_STATE_IDLE;
+            else
+                *next_state = PSM_STATE_RUN;
             break;
 
         default:
