@@ -5,7 +5,7 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         *hparams)
 {
     int cur = 1;
-    int si = 1;
+    int si = 0;
     while(cur < argc) {
 
         if(strcmp(argv[cur], "-help") == 0) {
@@ -20,9 +20,7 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
                 tparams->timeout = atof(argv[++cur]);
             }
             else return	0;
-        }
-        else{
-            si = 0;
+            si++;
         }
 
         // consider multimple timeout for implementing both idle and sleep states
@@ -32,9 +30,7 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
                 tparams->timeout_sleep = atof(argv[++cur]);
             }
             else return	0;
-        }
-        else{
-            si = 0;
+            si++;
         }
 
         // set policy to history based and get parameters and thresholds
@@ -67,8 +63,9 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         }
         cur ++;
     }
-    if(si == 1){
+    if(si == 2){
         *selected_policy = DPM_TIMEOUT_SLEEP_IDLE;
+        printf("hello baby \n \n \n");
     }
     return 1;
 }
