@@ -21,7 +21,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
     int n_tran_total;
     int next_work_item;
     int num_work_items;
-
+    double t_pred;
     // creates the queue of work items to be executed by the simulated system
     work_queue = dpm_init_work_queue(&num_work_items, fwl);
     if (work_queue == NULL){
@@ -40,6 +40,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         t_curr += t_inactive;
         // 2. Active phase
         psm_time_t t_active = work_queue[i].duration;
+        //printf("%d\n", (int)t_active);
         t_active_ideal += t_active;
         t_total_no_dpm += t_active;
         e_total_no_dpm += psm_state_energy(psm, PSM_STATE_RUN, t_active);
@@ -57,7 +58,8 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         // 1. Inactive phase
         t_inactive_start = t_curr;
         while(t_curr < work_queue[next_work_item].arrival) {
-            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams)) {
+            //printf("%d\n", (int)work_queue[next_work_item].arrival);
+            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams, &t_pred)) {
                 printf("[error] cannot decide next state!\n");
                 return 0;
             }
@@ -85,9 +87,9 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
             }
             prev_state = curr_state;
         }
+        //printf("%f\n", t_pred);
         // update history based on last inactive time (this can be placed elsewhere depending on your policy)
         dpm_update_history(history, t_curr - t_inactive_start);
-
         // 2. Active phase
         curr_state = PSM_STATE_RUN;
         if (curr_state != prev_state) {
@@ -134,9 +136,8 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 /* decide next power state */
 int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams)
+        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred)
 {
-    int t_pred;
     switch (policy) {
         case DPM_TIMEOUT_IDLE:
                     
@@ -182,15 +183,27 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             }
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            t_pred = hparams.alpha[0];
+            *t_pred = hparams.alpha[0];
+            //printf("%d\n", t_pred);
             for(int i = 1; i < 5; i++){
-                t_pred += history[i-1] * hparams.alpha[i];
+                *t_pred += (double)(history[DPM_HIST_WIND_SIZE-1-(i-1)] * hparams.alpha[i]);
             }
-            if(t_pred >= hparams.threshold[1]) 
+            //printf("%f\n", t_pred);
+            if(*t_pred >= hparams.threshold[1]){
+                //printf("%d\n", (int)hparams.threshold[1]);
+                if(curr_state == PSM_STATE_RUN)
+                    *next_state = PSM_STATE_SLEEP;
+                else if(curr_state == PSM_STATE_IDLE)
+                    *next_state = PSM_STATE_RUN;
+                break;
+            }
+            if(*t_pred >= hparams.threshold[0]) 
                 *next_state = PSM_STATE_IDLE;
             else
                 *next_state = PSM_STATE_RUN;
             break;
+
+        case DPM_PREDICTIVE:
 
         default:
             printf("[error] unsupported policy\n");
@@ -205,6 +218,7 @@ void dpm_init_history(psm_time_t *h)
 	for (int i=0; i<DPM_HIST_WIND_SIZE; i++) {
 		h[i] = 0;
 	}
+    
 }
 
 /* update inactive time history */
@@ -214,6 +228,7 @@ void dpm_update_history(psm_time_t *h, psm_time_t new_inactive)
 		h[i] = h[i+1];
 	}
 	h[DPM_HIST_WIND_SIZE-1] = new_inactive;
+    //printf("%d %d %d %d %d\n", (int)h[0], (int)h[1], (int)h[2], (int)h[3], (int)h[4]);
 }
 
 /* initialize work queue */

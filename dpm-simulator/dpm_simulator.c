@@ -21,6 +21,8 @@ int main(int argc, char *argv[]) {
         printf("[error] reading command line arguments\n");
         return -1;
     }
+    //printf("TH1: %d - TH2: %d\n", (int)hparams.threshold[0], (int)hparams.threshold[1]);
+    //printf("alpha 1:%f - 5: %f\n", hparams.alpha[0], hparams.alpha[4]);
     //printf("%f - %f\n", (float)tparams.timeout, (float)(tparams.timeout_sleep));
     psm_print(psm);
 	dpm_simulate(psm, sel_policy, tparams, hparams, fwl);
