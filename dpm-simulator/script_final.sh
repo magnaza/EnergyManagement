@@ -2,6 +2,9 @@ N=10
 step=0.2
 scale=8
 
+workload=workloads/workload_1.txt
+psm=example/psm.txt
+
 >reports/output1_idle.txt
 >reports/output1_sleep.txt
 >reports/output1_sleepidle.txt
@@ -10,12 +13,12 @@ scale=8
 >reports/norm_output1_sleep.txt
 >reports/norm_output1_sleepidle.txt
 
-energy_nodpm=$(./dpm_simulator -psm example/psm.txt -wl workloads/workload_1.txt -ts 10 | grep -o -P '\d+\.\d*' | sed -n 22p)
+energy_nodpm=$(./dpm_simulator -psm $psm -wl $workload -ts 10 | grep -o -P '\d+\.\d*' | sed -n 22p)
 
 for (( c=0; c<=$(bc<<<"$N/$step"); c++))
 do
     x=$(echo $(bc<<<"$step * $c"))
-    outcommand=$(./dpm_simulator -psm example/psm.txt -wl workloads/workload_1.txt -t $x)
+    outcommand=$(./dpm_simulator -psm $psm -wl $workload -t $x)
     this=$(echo "$outcommand" | grep -o -P '\d+\.\d*' | sed '$!d')
     those="$x $this"
     echo $those >> reports/output1_idle.txt
@@ -27,7 +30,7 @@ done
 for (( c=0; c<=$(bc<<<"$N/$step"); c++))
 do
     x=$(echo $(bc<<<"$step * $c"))
-    outcommand=$(./dpm_simulator -psm example/psm.txt -wl workloads/workload_1.txt -ts $x)
+    outcommand=$(./dpm_simulator -psm $psm -wl $workload -ts $x)
     this=$(echo "$outcommand" | grep -o -P '\d+\.\d*' | sed '$!d')
     those="$x $this"
     echo $those >> reports/output1_sleep.txt
@@ -42,7 +45,7 @@ for (( c=0; c<=$(bc<<<"$N/$step"); c++))
 do
     x=$(echo $(bc<<<"$step * $c"))
     i=$(($x + $fixed_idle))
-    outcommand=$(./dpm_simulator -psm example/psm.txt -wl workloads/workload_1.txt -ts $i -t $fixed_idle)
+    outcommand=$(./dpm_simulator -psm $psm -wl $workload -ts $i -t $fixed_idle)
     this=$(echo "$outcommand" | grep -o -P '\d+\.\d*' | sed '$!d')
     those="$i $this"
     echo $those >> reports/output1_sleepidle.txt
