@@ -33,6 +33,10 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
             si++;
         }
 
+        if(strcmp(argv[cur], "-p") == 0) {
+            *selected_policy = DPM_PREDICTIVE;
+        }
+
         // set policy to history based and get parameters and thresholds
         if(strcmp(argv[cur], "-h") == 0) {
             *selected_policy = DPM_HISTORY;
@@ -42,6 +46,7 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
                     hparams->alpha[i] = atof(argv[++cur]);
                 }
                 hparams->threshold[0] = atof(argv[++cur]);
+                //printf("%d\n", (int)hparams->threshold[0]);
                 hparams->threshold[1] = atof(argv[++cur]);
             } else return 0;
         }
