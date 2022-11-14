@@ -1,7 +1,7 @@
 
 #---------------------------------------inputs------------------------------------------------------------#
 
-N=20
+N=100
 step=0.1
 scale=12
 
@@ -13,11 +13,11 @@ psm=example/psm.txt
 
 >reports/output1_idle.txt
 >reports/output1_sleep.txt
->reports/output1_sleepidle.txt
+#>reports/output1_sleepidle.txt
 
 >reports/norm_output1_idle.txt
 >reports/norm_output1_sleep.txt
->reports/norm_output1_sleepidle.txt
+#>reports/norm_output1_sleepidle.txt
 
 energy_nodpm=$(./dpm_simulator -psm $psm -wl $workload -ts 10 | grep -o -P '\d+\.\d*' | sed -n 22p)
 
@@ -48,14 +48,14 @@ do
 
 #----------------------------------------sleep&idle-------------------------------------------------------#
 
-    i=$(($x + $fixed_idle))
-    outcommand_sleepidle=$(./dpm_simulator -psm $psm -wl $workload -ts $i -t $fixed_idle)
-    filtered_sleepidle=$(echo "$outcommand_sleepidle" | grep -o -P '\d+\.\d*' | sed '$!d')
-    text_sleepidle="$i $filtered_sleepidle"
-    echo $text_sleepidle >> reports/output1_sleepidle.txt
+#    i=$(($x + $fixed_idle))
+#    outcommand_sleepidle=$(./dpm_simulator -psm $psm -wl $workload -ts $i -t $fixed_idle)
+#    filtered_sleepidle=$(echo "$outcommand_sleepidle" | grep -o -P '\d+\.\d*' | sed '$!d')
+#    text_sleepidle="$i $filtered_sleepidle"
+#    echo $text_sleepidle >> reports/output1_sleepidle.txt
 
-    echo -n "$x " >> reports/norm_output1_sleepidle.txt
-    echo "scale=$scale; (1 - $filtered_sleepidle/$energy_nodpm) * 100" | bc >> reports/norm_output1_sleepidle.txt
+#    echo -n "$x " >> reports/norm_output1_sleepidle.txt
+#    echo "scale=$scale; (1 - $filtered_sleepidle/$energy_nodpm) * 100" | bc >> reports/norm_output1_sleepidle.txt
 
 done
 
