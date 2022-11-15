@@ -120,7 +120,7 @@ dpm_work_item* dpm_init_work_queue(int *num_items, char *fwl);
  */
 int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred);
+        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred, dpm_work_item item);
 
 /**
  * @brief Initialize the history of previous inactive times at the beginning of a simulation

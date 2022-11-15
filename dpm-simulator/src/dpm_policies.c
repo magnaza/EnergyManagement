@@ -58,8 +58,8 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         // 1. Inactive phase
         t_inactive_start = t_curr;
         while(t_curr < work_queue[next_work_item].arrival) {
-            //printf("%d\n", (int)work_queue[next_work_item].arrival);
-            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams, &t_pred)) {
+            //printf("%d - %d\n", (int)work_queue[next_work_item].arrival,  (int)work_queue[next_work_item].duration);
+            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams, &t_pred, work_queue[next_work_item])) {
                 printf("[error] cannot decide next state!\n");
                 return 0;
             }
@@ -90,6 +90,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         //printf("%f\n", t_pred);
         // update history based on last inactive time (this can be placed elsewhere depending on your policy)
         dpm_update_history(history, t_curr - t_inactive_start);
+        //printf("%d - %d\n", work_queue[next_work_item].arrival, work_queue[next_work_item].duration);
         // 2. Active phase
         curr_state = PSM_STATE_RUN;
         if (curr_state != prev_state) {
@@ -136,7 +137,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 /* decide next power state */
 int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred)
+        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred, dpm_work_item item)
 {
     switch (policy) {
         case DPM_TIMEOUT_IDLE:
@@ -204,7 +205,15 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             break;
 
         case DPM_PREDICTIVE:
-
+            //printf("siamo dentro");
+            //printf("%d - %d\n", (int)item.duration, (int)item.arrival);
+            if(item.duration > 10){
+                *next_state = PSM_STATE_SLEEP;
+            } else if(item.duration > 2){
+                *next_state = PSM_STATE_IDLE;
+            } else
+                *next_state = PSM_STATE_RUN;
+            break;
         default:
             printf("[error] unsupported policy\n");
             return 0;
