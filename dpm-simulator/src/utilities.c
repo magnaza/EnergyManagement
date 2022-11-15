@@ -36,6 +36,9 @@ int parse_args(int argc, char *argv[], char *fwl, psm_t *psm, dpm_policy_t
         if(strcmp(argv[cur], "-p") == 0) {
             printf("eccoci");
             *selected_policy = DPM_PREDICTIVE;
+            if(argc > cur + 1) {
+                tparams->timeout = atof(argv[++cur]);
+            }
         }
 
         // set policy to history based and get parameters and thresholds
