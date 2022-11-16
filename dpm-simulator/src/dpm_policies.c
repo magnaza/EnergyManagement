@@ -59,7 +59,7 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
         t_inactive_start = t_curr;
         while(t_curr < work_queue[next_work_item].arrival) {
             //printf("%d - %d\n", (int)work_queue[next_work_item].arrival,  (int)work_queue[next_work_item].duration);
-            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams, &t_pred, work_queue[next_work_item])) {
+            if (!dpm_decide_state(&curr_state, prev_state, curr_state, t_curr, t_inactive_start, history, sel_policy, tparams, hparams, &t_pred, work_queue[next_work_item-1])) {
                 printf("[error] cannot decide next state!\n");
                 return 0;
             }
@@ -137,8 +137,9 @@ int dpm_simulate(psm_t psm, dpm_policy_t sel_policy, dpm_timeout_params
 /* decide next power state */
 int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_t curr_state, psm_time_t t_curr,
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
-        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred, dpm_work_item item)
+        dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred, dpm_work_item item_past)
 {
+    int t_active;
     switch (policy) {
         case DPM_TIMEOUT_IDLE:
                     
@@ -206,10 +207,11 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
 
         case DPM_PREDICTIVE:
             //printf("siamo dentro");
-            //printf("%d - %d\n", (int)item.duration, (int)item.arrival);
-            if(item.duration > 10){
+            //printf("%d - %d\n", (int)item_past.duration, (int)item_past.arrival);
+            
+            if(item_past.duration > 100){
                 *next_state = PSM_STATE_SLEEP;
-            } else if(item.duration > 2){
+            } else if(item_past.duration > 2){
                 *next_state = PSM_STATE_IDLE;
             } else
                 *next_state = PSM_STATE_RUN;
