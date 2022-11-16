@@ -209,9 +209,9 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             //printf("siamo dentro");
             //printf("%d - %d\n", (int)item_past.duration, (int)item_past.arrival);
             
-            if(item_past.duration > 100){
+            if(item_past.duration > hparams.threshold[0]){
                 *next_state = PSM_STATE_SLEEP;
-            } else if(item_past.duration > 2){
+            } else if(item_past.duration > hparams.threshold[1]){
                 *next_state = PSM_STATE_IDLE;
             } else
                 *next_state = PSM_STATE_RUN;
