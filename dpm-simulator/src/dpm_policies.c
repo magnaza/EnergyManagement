@@ -139,7 +139,6 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
         psm_time_t t_inactive_start, psm_time_t *history, dpm_policy_t policy,
         dpm_timeout_params tparams, dpm_history_params hparams, double *t_pred, dpm_work_item item_past)
 {
-    int t_active;
     switch (policy) {
         case DPM_TIMEOUT_IDLE:
                     
@@ -185,10 +184,10 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             }
         case DPM_HISTORY:
             /* Day 3: EDIT */
-            *t_pred = hparams.alpha[0];
+            *t_pred = 0;
             //printf("%d\n", t_pred);
-            for(int i = 1; i < 5; i++){
-                *t_pred += (double)(history[DPM_HIST_WIND_SIZE-1-(i-1)] * hparams.alpha[i]);
+            for(int i = 0; i < 5; i++){
+                *t_pred += (double)(history[DPM_HIST_WIND_SIZE-1-i] * hparams.alpha[i]);
             }
             //printf("%f\n", t_pred);
             if(*t_pred >= hparams.threshold[1]){
@@ -199,7 +198,7 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
                     *next_state = PSM_STATE_RUN;
                 break;
             }
-            if(*t_pred >= hparams.threshold[0]) 
+            else if(*t_pred >= hparams.threshold[0]) 
                 *next_state = PSM_STATE_IDLE;
             else
                 *next_state = PSM_STATE_RUN;
@@ -209,13 +208,26 @@ int dpm_decide_state(psm_state_t *next_state, psm_state_t prev_state, psm_state_
             //printf("siamo dentro");
             //printf("%d - %d\n", (int)item_past.duration, (int)item_past.arrival);
             
-            if(item_past.duration > hparams.threshold[0]){
-                *next_state = PSM_STATE_SLEEP;
-            } else if(item_past.duration > hparams.threshold[1]){
-                *next_state = PSM_STATE_IDLE;
-            } else
-                *next_state = PSM_STATE_RUN;
-            break;
+            if(item_past.duration > hparams.threshold[1]){
+                if(curr_state == PSM_STATE_RUN) {
+                    //printf("next state is sleep");
+                    *next_state = PSM_STATE_SLEEP;
+                } else if(curr_state == PSM_STATE_IDLE){
+                    //printf("next state is run(sleep)");
+                    *next_state = PSM_STATE_RUN;
+                }
+                break;
+            } else {
+                if(item_past.duration > hparams.threshold[0]) {
+                    //printf("nect state is idle");
+                    *next_state = PSM_STATE_IDLE;
+                } else {
+                    //printf("next state is run");
+                    *next_state = PSM_STATE_RUN;
+                }
+                break;
+            }
+
         default:
             printf("[error] unsupported policy\n");
             return 0;
